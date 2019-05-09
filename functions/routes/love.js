@@ -13,12 +13,17 @@ router.get('/', async (req, res) => {
   if (!postId) {
     return res.status(400).send({ message: 'Query "postId" required!' })
   }
-  const doc = await getLove(postId).get()
-  if (!doc.exists) {
-    return res.status(404).send({ message: 'Data is not exists!' })
+  let count = 0
+  try {
+    const doc = await getLove(postId).get()
+    if (doc.exists) {
+      const { loves } = doc.data()
+      count = loves || 0
+    }
+  } catch (error) {
+    return res.status(500).send(error.message)
   }
-  const { loves } = doc.data()
-  return res.send({ postId, count: loves })
+  return res.send({ postId, count })
 })
 
 router.post('/', async (req, res) => {
